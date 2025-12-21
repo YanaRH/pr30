@@ -1,107 +1,26 @@
-version: '3.12'
 services:
-
-  materials:
-    container_name: materials
-    build:
-      context: .
-      dockerfile: ./Dockerfile
-    command: ./docker_commands.sh
+  materials:  # Ваш Django-сервис (замените на реальное имя, если отличается)
+    build: .  # Использует Dockerfile из текущей директории
+    ports:
+      - "8000:8000"  # Проброс порта
     volumes:
-      - .:/code
-    ports:
-      - "8000:8000"
-    env_file:
-      - ./.env
-    depends_on:
-      db_mypedia:
-        condition: service_healthy
-      celery:
-        condition: service_started
-      celery_beat:
-        condition: service_started
-    networks:
-      - local
-      - global
-
-  db_materials:
-    container_name: db_materials
-    image: postgres:16.4
-    env_file:
-      - ./.env
-    ports:
-      - "5432:5432"
+      - .:/app  # Монтируем код для разработки
     environment:
-      - POSTGRES_DB=${DB_NAME}
-      - POSTGRES_USER=${DB_USER}
-      - POSTGRES_PASSWORD=${DB_PASSWORD}
-    volumes:
-      - ./data/postgres:/var/lib/postgresql/data
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${DB_USER}"]
-      interval: 10s
-      timeout: 20s
-      retries: 3
-    networks:
-      - local
-
-  redis:
-    image: redis:latest
-    container_name: redis
-    restart: on-failure
-    volumes:
-      - redis:/var/lib/redis/data
-    expose:
-      - "6379"
-    ports:
-      - "6379:6379"
-    networks:
-      - local
-
-  celery:
-    container_name: celery
-    build:
-      context: .
-      dockerfile: ./Dockerfile
-    restart: on-failure
-    env_file:
-      - ./.env
-    volumes:
-      - .:/code
-    command: bash -c "celery -A config worker -l INFO -S django"
+      - DJANGO_SETTINGS_MODULE=myproject.settings  # Укажите ваш модуль настроек
+      - DB_NAME=mydb  # Добавьте переменные для БД
+      - DB_USER=user
+      - DB_PASSWORD=password
     depends_on:
-      - redis
-    networks:
-      - local
-      - global
+      - db_mypedia  # Зависимость от БД
 
-  celery_beat:
-    container_name: celery_beat
-    build:
-      context: .
-      dockerfile: ./Dockerfile
-    restart: on-failure
-    env_file:
-      - ./.env
+  db_mypedia:  # Сервис базы данных (PostgreSQL)
+    image: postgres:15
+    environment:
+      POSTGRES_DB: mydb
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
     volumes:
-      - .:/code
-    command: bash -c "celery -A config beat -l info -S django"
-    depends_on:
-      - redis
-    networks:
-      - local
+      - postgres_data:/var/lib/postgresql/data
 
 volumes:
-  mypedia:
-    driver: local
-  db_mypedia:
-    driver: local
-  redis:
-
-networks:
-  local:
-    driver: bridge
-    internal: true
-  global:
-    driver: bridge
-    internal: false
+  postgres_data:
