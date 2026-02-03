@@ -1,26 +1,58 @@
 services:
-  materials:  # Ваш Django-сервис (замените на реальное имя, если отличается)
-    build: .  # Использует Dockerfile из текущей директории
+  web:
+    build: .
     ports:
-      - "8000:8000"  # Проброс порта
+      - "8000:8000"
     volumes:
-      - .:/app  # Монтируем код для разработки
-    environment:
-      - DJANGO_SETTINGS_MODULE=myproject.settings  # Укажите ваш модуль настроек
-      - DB_NAME=mydb  # Добавьте переменные для БД
-      - DB_USER=user
-      - DB_PASSWORD=password
+      - .:/app
+    env_file:
+      - .env  # Loads variables from .env
     depends_on:
-      - db_mypedia  # Зависимость от БД
+      - db
+      - redis
+    command: python manage.py runserver 0.0.0.0:8000
+    restart: unless-stopped  # Added for better reliability
 
-  db_mypedia:  # Сервис базы данных (PostgreSQL)
+  db:
     image: postgres:15
-    environment:
-      POSTGRES_DB: mydb
-      POSTGRES_USER: user
-      POSTGRES_PASSWORD: password
+    env_file:
+      - .env  # Uses POSTGRES_* variables
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    restart: unless-stopped  # Added for better reliability
+
+  redis:
+    image: redis:7-alpine  # Lightweight Redis image for caching and queues
+    ports:
+      - "6379:6379"  # For external access if needed (consider removing if only internal)
+    volumes:
+      - redis_data:/data
+    restart: unless-stopped  # Added for better reliability
+
+  celery:
+    build: .
+    volumes:
+      - .:/app
+    env_file:
+      - .env
+    depends_on:
+      - db
+      - redis
+    command: celery -A myproject worker --loglevel=info  # Replace 'myproject' with your actual project name
+    restart: unless-stopped  # Added for better reliability
+
+  celery-beat:
+    build: .
+    volumes:
+      - .:/app
+    env_file:
+      - .env
+    depends_on:
+      - db
+      - redis
+    command: celery -A myproject beat --loglevel=info  # For periodic tasks
+    restart: unless-stopped  # Added for better reliability
 
 volumes:
   postgres_data:
+  redis_data:
