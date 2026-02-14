@@ -8,7 +8,7 @@ def main():
     """Run administrative tasks."""
     env = Env()
     env.read_env()  # Чтение переменных окружения из файла .env
-    os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'conf.settings')
+    os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'myproject.settings')
 
     try:
         from django.core.management import execute_from_command_line
