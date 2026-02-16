@@ -1,24 +1,25 @@
 [tool.poetry]
-name = "drf"
+name = "myproject"
 version = "0.1.0"
-description = ""
-authors = ["Valeriya Chulkova chulkovav66@mail.ru>"]
+description = "Django project with PostgreSQL, models, and fixtures"
+authors = ["Your Name <your.email@example.com>"]
 readme = "README.md"
+packages = [{include = "myproject"}]
 
 [tool.poetry.dependencies]
-python = "^3.12"
-Django = "5.1.4"
-djangorestframework = "3.15.2"
-psycopg2 = "2.9.10"
-pillow = "11.1.0"
-environs = "14.0.0"
-django-filter = "*"
+python = "^3.8"
+django = "^4.2"
+djangorestframework = "^3.14"
+psycopg2-binary = "^2.9"
+pillow = "^10.0"
+environs = "^10.3"
+python-dotenv = "^1.0"
 
-#phonenumbers = "*"
-
-
-[tool.poetry.dev-dependencies]
-
+[tool.poetry.group.dev.dependencies]  # Исправлено с dev-dependencies
+ipython = "^8.15"
+pytest = "^7.4"
+black = "^23.7"
+flake8 = "^6.0"
 
 [build-system]
 requires = ["poetry-core"]

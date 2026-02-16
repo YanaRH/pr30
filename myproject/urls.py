@@ -1,35 +1,17 @@
-import os
 from django.contrib import admin
 from django.urls import path, include
-from drf_yasg.views import get_schema_view
-from drf_yasg import openapi
-from rest_framework import permissions
-from django.http import HttpResponse  # Добавьте импорт
+from django.conf import settings
+from django.conf.urls.static import static
 
-# Определение schema_view для Swagger
-schema_view = get_schema_view(
-    openapi.Info(
-        title="Your API",
-        default_version='v1',
-        description="API documentation",
-        terms_of_service="https://www.google.com/policies/terms/",
-        contact=openapi.Contact(email="contact@yourapi.local"),
-        license=openapi.License(name="BSD License"),
-    ),
-    public=True,
-    permission_classes=(permissions.AllowAny,),
-)
-
-def home_view(request):
-    return HttpResponse("Главная страница")  # Простой view вместо redirect
-
-# Определение маршрутов URL
 urlpatterns = [
-    path('', home_view, name='home'),  # Простая главная страница
     path('admin/', admin.site.urls),
-    path('users/', include(("users.urls", 'users'), namespace="users")),
-    path('materials/', include(("materials.urls", 'materials'), namespace="materials")),
-    path('catalog/', include(("catalog.urls", 'catalog'), namespace="catalog")),
-    path('swagger/', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
-    path('redoc/', schema_view.with_ui('redoc', cache_timeout=0), name='schema-redoc'),
+    path('users/', include('users.urls')),
+    path('catalog/', include('catalog.urls')),
+    path('materials/', include('materials.urls')),
+    # Главная страница перенаправляет на catalog:index (уберите home_view, если был)
+    path('', include('catalog.urls')),  # Или используйте redirect в view
 ]
+
+# Медиа для дебага
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
