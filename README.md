@@ -20,4 +20,4 @@
 
 ## Структура
 - `myproject/`: Настройки Django.
-- `users/`, `catalog/`, `materials/`: Приложения.
+- `users/`, `catalog/`, `materials/`: Приложения
